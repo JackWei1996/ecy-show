@@ -30,7 +30,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     private GroupMapper groupMapper;
     private DepartmentMapper departmentMapper;
 
-    public UserService(GroupMapper groupMapper, TicketService ticketService,
+    public UserService(GroupMapper groupMapper,
                        DepartmentMapper departmentMapper) {
         this.groupMapper = groupMapper;
         this.departmentMapper = departmentMapper;
@@ -177,4 +177,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         updateById(user);
     }
 
+    public void add(User user) {
+        baseMapper.insert(user);
+    }
 }
