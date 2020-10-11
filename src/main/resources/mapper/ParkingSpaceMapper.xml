@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.ParkingSpaceMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ecy.show.entity.ParkingSpace">
+        <id column="id" property="id" />
+        <result column="number" property="number" />
+        <result column="parking_lot" property="parkingLot" />
+        <result column="floor" property="floor" />
+        <result column="area" property="area" />
+        <result column="usage_count" property="usageCount" />
+        <result column="status" property="status" />
+        <result column="gmt_create" property="gmtCreate" />
+        <collection property="car" ofType="com.ecy.show.entity.Appointment">
+            <result column="car_number" property="carNumber" />
+            <result column="name" property="name" />
+            <result column="phone" property="phone" />
+            <result column="parking_space_number" property="parkingSpaceNumber" />
+            <result column="cstatus" property="status" />
+            <result column="is_error" property="isError" />
+        </collection>
+    </resultMap>
+
+    <select id="statusCount" resultType="map">
+        SELECT
+        p.status, if(p.status = 2, count(p.status) + #{countInCar}, count(p.status)) ount
+        FROM
+        `parking_space` p
+        <where>
+            <if test="parkingLot!=null and parkingLot!=''">
+                AND p.parking_lot = #{parkingLot}
+            </if>
+        </where>
+        GROUP BY p.status
+    </select>
+
+    <select id="getParkingLot" resultType="map">
+        SELECT
+            p.parking_lot name
+        FROM
+            parking_space p
+        GROUP BY p.parking_lot
+    </select>
+
+    <select id="getAllParking" resultType="java.lang.String">
+        SELECT
+            p.number number
+        FROM
+            parking_space p
+        ORDER BY number
+    </select>
+
+    <update id="addUsageCount">
+        UPDATE parking_space
+        set usage_count = (usage_count + 1), status = 2
+        WHERE number = #{parkingNumber}
+    </update>
+
+    <select id="listParkingCar" resultMap="BaseResultMap">
+        SELECT * FROM parking_space ps LEFT JOIN
+            ( SELECT a.car_number, a.parking_space_number, a.status cstatus, a.is_error,a.NAME,
+                     a.phone,
+                     IF(ABS(NOW() - a.start_time) > ABS(NOW() - a.end_time), ABS(NOW() - a.end_time), ABS(NOW() - a.start_time)) AS stTime
+            FROM appointment a
+            WHERE  a.parking_space_number IS NOT NULL
+              AND a.out_time IS NULL
+              AND a.start_time &gt;= DATE(CURDATE())
+              AND a.start_time &lt;= CONCAT(DATE(CURDATE()),' 23:59:59')
+              ORDER BY stTime ASC
+            ) app
+        ON ps.number = app.parking_space_number OR ps.number = app.is_error
+        ORDER BY ps.number ASC, app.stTime ASC
+    </select>
+
+    <select id="getStatus" resultType="int">
+        SELECT ps.status
+        FROM parking_space ps
+        WHERE ps.number = #{parkingNumber}
+    </select>
+</mapper>

@@ -137,19 +137,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
 
-    public User getUserInfoById(Long userId, Long currentId) throws BusinessException {
-        User user = baseMapper.getUserInfoById(userId, currentId);
-        try {
-            if (user.getDeleted().equals(User.DELETED)) {
-                throw new BusinessException("该用户已注销");
-            }
-            user.setDeleted(null);
-        } catch (Exception e) {
-            throw new BusinessException("未找到该用户");
-        }
-        return user;
-    }
-
     /*
      * 根据旧密码修改用户密码
      * */

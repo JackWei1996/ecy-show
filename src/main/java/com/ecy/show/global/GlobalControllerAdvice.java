@@ -18,7 +18,7 @@ import java.lang.reflect.AnnotatedElement;
  * 全局controller advice
  * 包装请求成功的返回结果
  */
-@RestControllerAdvice(basePackages = "com.whiteink.pms.controller")
+@RestControllerAdvice(basePackages = "com.ecy.show.controller")
 public class GlobalControllerAdvice implements ResponseBodyAdvice {
 
     @Override

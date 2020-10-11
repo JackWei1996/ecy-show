@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.CarMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ecy.show.entity.Car">
+        <id column="id" property="id" />
+        <result column="car_type" property="carType" />
+        <result column="car_number" property="carNumber" />
+        <result column="name" property="name" />
+        <result column="user_type" property="userType" />
+        <result column="id_card" property="idCard" />
+        <result column="phone" property="phone" />
+        <result column="job_number" property="jobNumber" />
+        <result column="status" property="status" />
+        <result column="company_id" property="companyId" />
+        <result column="department_id" property="departmentId" />
+        <result column="appointment_count" property="appointmentCount" />
+        <result column="parking_count" property="parkingCount" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_modified" property="gmtModified" />
+        <result column="user_id" property="userId" />
+    </resultMap>
+
+    <update id="addBookCount">
+        UPDATE car set appointment_count = (appointment_count + 1)
+        WHERE car_number = #{carNumber}
+    </update>
+
+    <update id="addParkingCoungt">
+        UPDATE car set parking_count = (parking_count + 1), status = 2
+        WHERE car_number = #{carNumber}
+    </update>
+
+    <update id="leave">
+        UPDATE car set status = 0
+        WHERE car_number = #{carNumber}
+    </update>
+
+    <update id="inStatus">
+        UPDATE car set status = 2
+        WHERE car_number = #{carNumber}
+    </update>
+
+    <select id="listCar" resultMap="BaseResultMap">
+        SELECT c.* ,
+               (SELECT name FROM department WHERE id = c.company_id) company_name ,
+               (SELECT name FROM department WHERE id = c.department_id) department_name
+        from car c
+        <where>
+            <if test="search.type!=null and search.type != -1">
+                AND c.user_type = #{search.type}
+            </if>
+            <if test="search.number!=null and search.number != ''">
+                AND ( c.id_card LIKE CONCAT('%', #{search.number} ,'%')
+                OR c.job_number LIKE CONCAT('%', #{search.number} ,'%')
+                OR c.name LIKE CONCAT('%', #{search.number} ,'%')
+                OR c.car_number LIKE CONCAT('%', #{search.number} ,'%')
+                 )
+            </if>
+        </where>
+    </select>
+</mapper>

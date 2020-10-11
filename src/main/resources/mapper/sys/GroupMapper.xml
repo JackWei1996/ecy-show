@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.sys.GroupMapper">
+
+    <resultMap id="GroupMap" type="com.ecy.show.dto.sys.GroupDto">
+        <id column="group_id" property="id"/>
+        <collection property="menus" ofType="com.ecy.show.dto.sys.MenuDto">
+            <id column="menu_code" property="menuCode"/>
+            <result column="menu_name" property="menuName"/>
+            <collection property="permissions" ofType="com.ecy.show.dto.sys.PermissionDto">
+                <id column="permission_id" property="permissionId"/>
+                <id column="permission_code" property="permissionCode"/>
+                <result column="permission_name" property="permissionName"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <insert id="insertGroupPermission">
+        insert into sys_group_permission (group_id, permission_id,deleted)
+        values
+        <foreach collection="permissions" item="item" index="index" separator=",">
+            (#{groupId}, #{item},0)
+        </foreach>
+    </insert>
+    <select id="getPermissionByGroupId" resultMap="GroupMap">
+     SELECT
+        a.group_id,
+        a.permission_id,
+        s.permission_code,
+        s.permission_name,
+        s.menu_code,
+        s.menu_name
+        FROM `sys_group_permission` a
+        LEFT JOIN `sys_permission` s
+        ON s.id=a.permission_id
+        where a.group_id=#{id} and a.deleted=0 and s.deleted=0
+        ORDER BY s.sort,a.group_id
+    </select>
+
+    <update id="removeOldPermission">
+        UPDATE sys_group_permission
+        SET
+        deleted = '1'
+        WHERE group_id = #{groupId}
+        AND permission_id in (
+        <foreach collection="permissions" item="item" index="index" separator=",">
+            #{item}
+        </foreach>
+        )
+    </update>
+</mapper>

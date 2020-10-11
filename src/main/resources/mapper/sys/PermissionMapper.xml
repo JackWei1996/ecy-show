@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.sys.PermissionMapper">
+
+    <resultMap id="permissionMap" type="com.ecy.show.entity.sys.Permission">
+        <id column="menuName" property="menuName"/>
+        <id column="menuCode" property="menuCode"/>
+        <collection property="permissions" ofType="com.ecy.show.entity.sys.Permission">
+            <id column="id" property="id"/>
+            <result column="permissionCode" property="permissionCode"/>
+            <result column="permissionName" property="permissionName"/>
+            <result column="sort" property="sort" javaType="Integer"/>
+        </collection>
+    </resultMap>
+
+    <select id="listAllPermission" resultMap="permissionMap">
+        SELECT
+            p.id,
+            p.menu_name menuName,
+            p.menu_code menuCode,
+            p.permission_name permissionName,
+            p.permission_code permissionCode,
+            p.sort
+        FROM sys_permission p where p.deleted=0;
+    </select>
+
+</mapper>

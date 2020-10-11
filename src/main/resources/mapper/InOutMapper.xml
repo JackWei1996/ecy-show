@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.InOutMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ecy.show.entity.InOut">
+        <id column="id" property="id" />
+        <result column="bus_number" property="busNumber" />
+        <result column="plate_no" property="plateNo" />
+        <result column="out_time" property="outTime" />
+        <result column="stop_time" property="stopTime" />
+        <result column="stop_flag" property="stopFlag" />
+    </resultMap>
+
+    <select id="countInCars" resultType="int">
+        SELECT
+            count( * )
+        FROM
+            in_out
+        WHERE
+            stop_flag = 0
+          AND stop_time &gt;= DATE( CURDATE( ) )
+          AND bus_number NOT IN ( SELECT parking_space_number
+          FROM appointment a WHERE a.in_time >= DATE( CURDATE( ) )
+                               AND a.out_time IS NULL )
+    </select>
+
+    <select id="listInCars" resultMap="BaseResultMap">
+        select bus_number, plate_no from in_out
+        WHERE stop_flag = 0
+        AND stop_time &gt;= DATE(CURDATE())
+    </select>
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.sys.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ecy.show.entity.sys.User">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="pwd" property="pwd" />
+        <result column="job_number" property="jobNumber" />
+        <result column="company_id" property="companyId" />
+        <result column="department_id" property="departmentId" />
+        <result column="company_name" property="companyName" />
+        <result column="department_name" property="departmentName" />
+        <result column="id_card" property="idCard" />
+        <result column="phone" property="phone" />
+        <result column="car_number" property="carNumber" />
+        <result column="car_type" property="carType" />
+        <result column="head_img_url" property="headImgUrl" />
+        <result column="openid" property="openid" />
+        <result column="access_token" property="accessToken" />
+        <result column="refresh_token" property="refreshToken" />
+        <result column="group_id" property="groupId" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_modified" property="gmtModified" />
+        <result column="is_push" property="isPush" />
+    </resultMap>
+
+    <resultMap id="PermissionMap" type="com.ecy.show.entity.sys.Permission">
+        <result column="permission_code" property="permissionCode" />
+    </resultMap>
+
+    <select id="getUserPermissionsSet" resultMap="PermissionMap">
+          SELECT p.permission_code FROM `sys_group_permission` gp
+                JOIN `sys_permission` p
+                on gp.permission_id=p.id and gp.group_id=#{groupId}
+    </select>
+
+    <select id="adminPageUser" resultMap="BaseResultMap">
+        SELECT u.id,u.name, u.job_number, u.company_id,u.department_id,u.id_card,u.is_push,
+               (SELECT name FROM department WHERE id = u.company_id) company_name,
+               (SELECT name FROM department WHERE id = u.department_id) department_name,
+               u.id_card,u.phone,u.car_number,u.car_type,u.head_img_url,u.group_id,u.gmt_create,u.gmt_modified
+        FROM sys_user u
+        <where>
+
+            <if test="page.isStaff==true">
+                AND u.group_id = 2
+            </if>
+            <if test="page.isStaff==false">
+                AND u.group_id &lt;&gt; 2  AND u.group_id &lt;&gt; 3
+            </if>
+            AND u.deleted=0
+            <if test="page.companyId!=null and page.companyId!=0">
+                AND u.company_id = #{page.companyId}
+            </if>
+            <if test="page.departmentId!=null and page.departmentId!=0">
+                AND u.department_id = #{page.departmentId}
+            </if>
+            <if test="page.search!=null and page.search!=''">
+                AND (u.name LIKE CONCAT('%',#{page.search} ,'%')
+                OR u.job_number LIKE CONCAT('%',#{page.search} ,'%')
+                OR u.phone LIKE CONCAT('%',#{page.search} ,'%'))
+            </if>
+        </where>
+    </select>
+    
+    <select id="listStaff" resultMap="BaseResultMap">
+        SELECT u.name, u.job_number,u.job_number,
+               (SELECT name FROM department WHERE id = u.company_id) company_name,
+               (SELECT name FROM department WHERE id = u.department_id) department_name,
+               u.id_card,u.phone,u.car_number,u.car_type,u.head_img_url,u.group_id,u.gmt_create,u.gmt_modified
+        FROM sys_user u
+        where u.group_id = 2 and u.deleted=0
+    </select>
+</mapper>

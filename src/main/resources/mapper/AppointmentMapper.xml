@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.AppointmentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ecy.show.entity.Appointment">
+        <id column="id" property="id" />
+        <result column="cause_type" property="causeType" />
+        <result column="cause_name" property="causeName" />
+        <result column="name" property="name" />
+        <result column="job_number" property="jobNumber" />
+        <result column="id_card" property="idCard" />
+        <result column="phone" property="phone" />
+        <result column="company_id" property="companyId" />
+        <result column="department_id" property="departmentId" />
+        <result column="company_name" property="companyName" />
+        <result column="department_name" property="departmentName" />
+        <result column="respondents" property="respondents" />
+        <result column="respondents_phone" property="respondentsPhone" />
+        <result column="remarks" property="remarks" />
+        <result column="user_type" property="userType" />
+        <result column="reject_type" property="rejectType" />
+        <result column="reject_name" property="rejectName" />
+        <result column="reject_reason" property="rejectReason" />
+        <result column="car_type" property="carType" />
+        <result column="car_number" property="carNumber" />
+        <result column="parking_space_number" property="parkingSpaceNumber" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="status" property="status" />
+        <result column="in_time" property="inTime" />
+        <result column="out_time" property="outTime" />
+        <result column="is_error" property="isError" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="user_id" property="userId" />
+        <result column="carStatus" property="carStatus" />
+        <result column="stop_time" property="stopTime" />
+        <result column="stopFlag" property="stopFlag" />
+        <result column="check_time" property="checkTime" />
+
+    </resultMap>
+
+    <select id="getBookNum" resultType="int">
+        SELECT count(*) FROM appointment
+        WHERE start_time &gt;=  DATE(CURDATE())
+        AND start_time &lt;= CONCAT(DATE(CURDATE()),' 23:59:59')
+    </select>
+
+    <select id="getInNum" resultType="int">
+        SELECT count(*) FROM appointment
+        WHERE in_time &gt;=  DATE(CURDATE())
+        AND in_time &lt;= CONCAT(DATE(CURDATE()),' 23:59:59')
+    </select>
+
+    <select id="listAppointment" resultMap="BaseResultMap">
+        SELECT a.*,
+        (SELECT name FROM department WHERE id = a.company_id) company_name ,
+        (SELECT name FROM department WHERE id = a.department_id) department_name ,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM appointment a
+        <where>
+            <if test="caller.wait!=null and caller.wait!=-1">
+                AND a.status = #{caller.wait}
+            </if>
+            <if test="caller.finish!=null and caller.finish!=-1">
+                AND a.status != #{caller.finish}
+            </if>
+            <if test="caller.causeType!=null and caller.causeType!=-1">
+                AND a.cause_type = #{caller.causeType}
+            </if>
+            <if test="caller.status!=null and caller.status!=-1">
+                AND a.status = #{caller.status}
+            </if>
+            <if test="caller.number!=null and caller.number!=''">
+                AND( a.name LIKE CONCAT('%', #{caller.number}, '%')
+                    OR a.id_card LIKE CONCAT('%', #{caller.number}, '%')
+                    OR a.car_number LIKE CONCAT('%', #{caller.number} ,'%')
+                )
+            </if>
+            AND user_type = 3
+        </where>
+        ORDER BY gmt_create DESC
+    </select>
+
+    <select id="listMyAppointment" resultMap="BaseResultMap">
+        SELECT a.*,
+        (SELECT name FROM department WHERE id = a.company_id) company_name ,
+        (SELECT name FROM department WHERE id = a.department_id) department_name ,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM appointment a
+        WHERE a.user_id = #{userId}
+          AND in_time IS NULL
+          ORDER BY gmt_create DESC
+    </select>
+
+    <select id="listMyParking" resultMap="BaseResultMap">
+        SELECT a.*,
+               (SELECT name FROM department WHERE id = a.company_id) company_name ,
+               (SELECT name FROM department WHERE id = a.department_id) department_name ,
+               (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+               (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM appointment a
+        WHERE a.user_id = #{userId}
+          AND in_time IS NOT NULL
+        <if test="startDateTime!=null">
+            AND a.start_time &gt;= #{startDateTime}
+            AND a.end_time &lt;= #{endDateTime}
+        </if>
+        ORDER BY gmt_create DESC
+    </select>
+
+    <select id="getPassAppointment" resultMap="BaseResultMap">
+        SELECT * FROM appointment a
+        WHERE status = 2
+          AND user_id = #{userId}
+          AND parking_space_number IS NULL
+          AND start_time = #{startDateTime}
+          AND end_time = #{endDateTime}
+          ORDER BY gmt_create DESC
+        LIMIT 1
+    </select>
+
+    <select id="toDayBooks" resultMap="BaseResultMap">
+        SELECT a.parking_space_number, a.start_time, a.end_time
+        FROM appointment a
+        WHERE a.start_time &gt;= #{startTime}
+          AND (status = 2
+          OR in_time IS NOT NULL)
+        <if test="id!=null">
+            AND id != #{id}
+        </if>
+    </select>
+
+    <select id="toDayAppointment" resultMap="BaseResultMap">
+        SELECT a.id, a.car_number, a.parking_space_number, a.start_time,
+               a.end_time, a.in_time, a.out_time, a.is_error,
+               IF(ABS(NOW() - a.start_time) > ABS(NOW() - a.end_time), ABS(NOW() - a.end_time), ABS(NOW() - a.start_time)) AS stTime
+        FROM appointment a
+        WHERE a.out_time IS NULL
+        AND a.status = 2
+        AND a.start_time &gt;= DATE(CURDATE())
+        AND a.start_time &lt;= CONCAT(DATE(CURDATE()),' 23:59:59')
+        ORDER BY stTime DESC
+    </select>
+
+    <sql id="BOOK_SQL">
+        SELECT a.*,
+        (SELECT name FROM department WHERE id = a.company_id) company_name ,
+        (SELECT name FROM department WHERE id = a.department_id) department_name,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name,
+        IF(a.in_time IS NULL ,'进行中',(IF(a.out_time IS NULL, '已入场', '已出场'))) carStatus
+        FROM appointment a
+        <where>
+            <if test="search.carNumber!=null and search.carNumber!=''">
+                AND a.car_number = #{search.carNumber}
+            </if>
+            <if test="search.number!=null and search.number!=''">
+                AND (
+                a.name LIKE CONCAT('%', #{search.number}, '%')
+                OR a.id_card LIKE CONCAT('%', #{search.number}, '%')
+                OR a.job_number LIKE CONCAT('%', #{search.number}, '%')
+                OR a.car_number LIKE CONCAT('%', #{search.number}, '%')
+                )
+            </if>
+            <if test="search.type!=null and search.type!=-1">
+                AND a.user_type = #{search.type}
+            </if>
+            <if test="search.time!=null">
+                AND a.start_time &lt;= #{search.time}
+                AND a.end_time &gt;= #{search.time}
+            </if>
+            <if test="search.status!=null and search.status!=-1">
+                <if test="search.status==1">
+                    AND a.in_time IS NULL
+                </if>
+                <if test="search.status==2">
+                    AND a.out_time IS NULL
+                    AND a.in_time IS NOT NULL
+                </if>
+                <if test="search.status==3">
+                    AND a.out_time IS NOT NULL
+                </if>
+            </if>
+            AND a.parking_space_number IS NOT NULL
+        </where>
+    </sql>
+
+    <select id="listBook" resultMap="BaseResultMap">
+        <include refid="BOOK_SQL"></include>
+    </select>
+
+    <select id="exportBook" resultMap="BaseResultMap">
+        <include refid="BOOK_SQL"></include>
+    </select>
+
+    <sql id="PARKING_SQL">
+        SELECT a.id, a.name, a.job_number,a.id_card, a.phone, a.respondents, a.respondents_phone,
+        a.remarks,a.parking_space_number,a.car_number,a.in_time, a.out_time,
+        ( SELECT NAME FROM dict_item WHERE dict_type_code = 'business-type' AND CODE = a.cause_type ) cause_name,
+        ( SELECT NAME FROM department WHERE id = a.company_id ) company_name,
+        ( SELECT NAME FROM department WHERE id = a.department_id ) department_name
+        from appointment a
+        <where>
+            a.in_time IS NOT NULL
+            <if test="search.number!=null and search.number!=''">
+                AND (a.name LIKE CONCAT('%',#{search.number} ,'%')
+                OR a.job_number LIKE CONCAT('%',#{search.number} ,'%')
+                OR a.id_card LIKE CONCAT('%',#{search.number} ,'%')
+                )
+            </if>
+            <if test="search.type!=null and search.type!=-1">
+                AND a.user_type = #{search.type}
+            </if>
+            <if test="search.isOut!=null and search.isOut!=-1 and search.isOut==1">
+                AND a.out_time IS NOT NULL
+            </if>
+            <if test="search.startTime!=null">
+                AND a.in_time &gt;= #{search.startTime}
+            </if>
+            <if test="search.endTime!=null">
+                AND a.in_time &lt;= #{search.endTime}
+            </if>
+            <if test="search.carNumber!=null and search.carNumber!=''">
+                AND a.car_number = #{search.carNumber}
+            </if>
+        </where>
+        ORDER BY a.in_time DESC
+    </sql>
+
+    <select id="listParking" resultMap="BaseResultMap">
+       <include refid="PARKING_SQL"></include>
+    </select>
+    <select id="exportParking" resultMap="BaseResultMap">
+        <include refid="PARKING_SQL"></include>
+    </select>
+
+    <select id="listCarStatus" resultMap="BaseResultMap">
+        SELECT c.* ,
+        (SELECT name FROM department WHERE id = c.company_id) company_name ,
+        (SELECT name FROM department WHERE id = c.department_id) department_name,
+        IF(c.in_time IS NULL ,'进行中',(IF(c.out_time IS NULL, '已入场', '已出场'))) carStatus
+        from appointment c
+        <where>
+            <if test="search.type!=null and search.type != -1">
+                AND c.user_type = #{search.type}
+            </if>
+            <if test="search.number!=null and search.number != ''">
+                AND ( c.id_card LIKE CONCAT('%', #{search.number} ,'%')
+                OR c.job_number LIKE CONCAT('%', #{search.number} ,'%')
+                 OR c.name LIKE CONCAT('%', #{search.number} ,'%')
+                OR c.car_number LIKE CONCAT('%', #{search.number} ,'%')
+                 )
+            </if>
+        </where>
+        ORDER BY c.start_time DESC
+    </select>
+
+    <select id="getInAppointment" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            appointment a
+        WHERE a.start_time &lt;= #{entryTime}
+            AND a.end_time &gt;= #{entryTime}
+        LIMIT 1
+    </select>
+
+    <select id="getAppointmentById" resultMap="BaseResultMap">
+        SELECT a.*,
+               (SELECT name FROM department WHERE id = a.company_id) company_name ,
+               (SELECT name FROM department WHERE id = a.department_id) department_name ,
+               (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+               (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM
+            appointment a
+            WHERE a.id = #{id}
+    </select>
+
+    <select id="listMyAppointmentByPass" resultMap="BaseResultMap">
+        SELECT a.*,
+        (SELECT name FROM department WHERE id = a.company_id) company_name ,
+        (SELECT name FROM department WHERE id = a.department_id) department_name,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM appointment a
+        WHERE status = 2
+        AND user_id = #{userId}
+        <if test="search!=null and search!=''">
+            AND (respondents LIKE CONCAT('%', #{search}, '%') OR respondents_phone LIKE CONCAT('%', #{search}, '%') )
+        </if>
+        <if test="startDateTime!=null">
+            AND a.start_time &gt;= #{startDateTime}
+        </if>
+        <if test="endDateTime!=null">
+            AND a.start_time &lt;= #{endDateTime}
+        </if>
+        ORDER BY gmt_create DESC
+    </select>
+
+    <select id="listMyAppointmentByNotPass" resultMap="BaseResultMap">
+        SELECT a.*,
+        (SELECT name FROM department WHERE id = a.company_id) company_name ,
+        (SELECT name FROM department WHERE id = a.department_id) department_name,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+        (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM appointment a
+        WHERE status = 1
+         AND user_id = #{userId}
+        <if test="search!=null and search!=''">
+            AND (respondents LIKE CONCAT('%', #{search}, '%') OR respondents_phone LIKE CONCAT('%', #{search}, '%') )
+        </if>
+        ORDER BY gmt_create DESC
+    </select>
+
+    <select id="getLastOne" resultMap="BaseResultMap">
+        SELECT a.*,
+               (SELECT name FROM department WHERE id = a.company_id) company_name ,
+               (SELECT name FROM department WHERE id = a.department_id) department_name,
+               (SELECT name FROM dict_item WHERE dict_type_code = 'reject-type' and code = a.reject_type) reject_name ,
+               (SELECT name FROM dict_item WHERE dict_type_code = 'business-type' and code = a.cause_type) cause_name
+        FROM appointment a
+        WHERE a.user_id = #{userId}
+        ORDER BY a.gmt_create DESC
+        LIMIT 1
+    </select>
+    <select id="getPassAppointmentByCarNumber" resultMap="BaseResultMap">
+        SELECT a.*
+        FROM appointment a
+        WHERE a.car_number = #{carNumber}
+        AND a.status = 2
+        AND a.in_time IS NULL
+        ORDER BY a.gmt_create DESC
+        LIMIT 1
+    </select>
+
+    <select id="countInRange" resultType="int" >
+        SELECT
+        COUNT(*)
+        FROM
+        appointment a
+        WHERE a.user_id = #{userId}
+        AND a.start_time &lt;= #{startTime}
+        AND a.end_time &gt;= #{endTime}
+        AND a.out_time IS NULL
+    </select>
+</mapper>
