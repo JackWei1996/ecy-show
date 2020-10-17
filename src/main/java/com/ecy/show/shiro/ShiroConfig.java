@@ -70,6 +70,7 @@ public class ShiroConfig {
         Map<String, String> map = new LinkedHashMap<String, String>(32);
         //预约公共接口不拦截
         map.put("/open/**", "anon");
+        map.put("/upload/**", "anon");
 
         map.put("/", "anon");
         map.put("/swagger-ui.html", "anon");

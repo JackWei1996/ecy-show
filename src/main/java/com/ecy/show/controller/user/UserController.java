@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ecy.show.dto.sys.CurrentUser;
 import com.ecy.show.dto.sys.LoginDto;
+import com.ecy.show.entity.Works;
 import com.ecy.show.entity.sys.User;
 import com.ecy.show.exception.BusinessException;
+import com.ecy.show.service.WorksService;
 import com.ecy.show.service.sys.TicketService;
 import com.ecy.show.service.sys.UserService;
 import com.ecy.show.util.JwtUtil;
@@ -34,10 +36,12 @@ import java.io.UnsupportedEncodingException;
 public class UserController {
     private UserService userService;
     private TicketService ticketService;
+    private WorksService worksService;
 
-    public UserController(UserService userService, TicketService ticketService) {
+    public UserController(UserService userService, TicketService ticketService, WorksService worksService) {
         this.userService = userService;
         this.ticketService = ticketService;
+        this.worksService = worksService;
     }
 
     @GetMapping
@@ -58,6 +62,20 @@ public class UserController {
             return "注销成功";
         }else {
             return "注销失败";
+        }
+    }
+
+    @ApiOperation("上传作品")
+    @PostMapping("uploadWorks")
+    public String uploadWorks(Works works) throws BusinessException {
+        CurrentUser loginInfo = userService.getLoginInfo();
+
+        works.setUserId(loginInfo.getId());
+        boolean save = worksService.save(works);
+        if (save){
+            return "上传成功";
+        }else {
+            return "上传失败";
         }
     }
 }

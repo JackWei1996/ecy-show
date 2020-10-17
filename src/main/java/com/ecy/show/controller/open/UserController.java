@@ -3,12 +3,10 @@ package com.ecy.show.controller.open;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ecy.show.dto.sys.CurrentUser;
 import com.ecy.show.dto.sys.LoginDto;
 import com.ecy.show.entity.Works;
 import com.ecy.show.entity.sys.User;
 import com.ecy.show.exception.BusinessException;
-import com.ecy.show.global.Constant;
 import com.ecy.show.service.WorksService;
 import com.ecy.show.service.sys.TicketService;
 import com.ecy.show.service.sys.UserService;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 /**
  * <p>
