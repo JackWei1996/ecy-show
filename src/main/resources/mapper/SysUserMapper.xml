@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecy.show.mapper.SysUserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.ecy.show.entity.SysUser">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="job_number" property="jobNumber" />
+        <result column="company_id" property="companyId" />
+        <result column="department_id" property="departmentId" />
+        <result column="id_card" property="idCard" />
+        <result column="emil" property="emil" />
+        <result column="wechart" property="wechart" />
+        <result column="qq" property="qq" />
+        <result column="phone" property="phone" />
+        <result column="car_number" property="carNumber" />
+        <result column="car_type" property="carType" />
+        <result column="head_img_url" property="headImgUrl" />
+        <result column="refresh_token" property="refreshToken" />
+        <result column="openid" property="openid" />
+        <result column="access_token" property="accessToken" />
+        <result column="group_id" property="groupId" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="is_push" property="isPush" />
+        <result column="gmt_modified" property="gmtModified" />
+        <result column="deleted" property="deleted" />
+        <result column="pwd" property="pwd" />
+    </resultMap>
+
+</mapper>

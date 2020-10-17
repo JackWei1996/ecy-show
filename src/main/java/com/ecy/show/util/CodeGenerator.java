@@ -15,7 +15,7 @@ import java.util.ResourceBundle;
 public class CodeGenerator {
     private static final String AUTHOR = "Jack魏";
     private static final String PARENT = "com.ecy.show";
-    private static final String[] TABLES = {"in_out"};
+    private static final String[] TABLES = {"sys_user", "works"};
     private static String username;
     private static String password;
     private static String url;
@@ -23,7 +23,7 @@ public class CodeGenerator {
 
     private static void initDataSource() {
         //读取application.properties文件，不加.properties后缀，不加路径名
-        ResourceBundle bundle = ResourceBundle.getBundle("application-prod");
+        ResourceBundle bundle = ResourceBundle.getBundle("application");
         username = bundle.getString("spring.datasource.username");
         password = bundle.getString("spring.datasource.password");
         url = bundle.getString("spring.datasource.url");
