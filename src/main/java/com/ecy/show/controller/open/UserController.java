@@ -1,11 +1,15 @@
 package com.ecy.show.controller.open;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ecy.show.dto.sys.CurrentUser;
 import com.ecy.show.dto.sys.LoginDto;
+import com.ecy.show.entity.Works;
 import com.ecy.show.entity.sys.User;
 import com.ecy.show.exception.BusinessException;
 import com.ecy.show.global.Constant;
+import com.ecy.show.service.WorksService;
 import com.ecy.show.service.sys.TicketService;
 import com.ecy.show.service.sys.UserService;
 import com.ecy.show.util.JwtUtil;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
 /**
  * <p>
@@ -30,14 +35,17 @@ import java.io.UnsupportedEncodingException;
 @RestController("OpenUserController")
 @RequestMapping("/open")
 @Validated
-@Api(tags = "用户公告接口")
+@Api(tags = "用户公共接口")
 public class UserController {
     private UserService userService;
     private TicketService ticketService;
+    private WorksService worksService;
 
-    public UserController(UserService userService, TicketService ticketService) {
+    public UserController(UserService userService, TicketService ticketService,
+                          WorksService worksService) {
         this.userService = userService;
         this.ticketService = ticketService;
+        this.worksService = worksService;
     }
 
     @ApiOperation("注册")
@@ -80,6 +88,12 @@ public class UserController {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @ApiOperation("搜索")
+    @PostMapping("search")
+    public IPage logout(Page page, Works works) {
+        return worksService.search(page, works);
     }
 
 }
