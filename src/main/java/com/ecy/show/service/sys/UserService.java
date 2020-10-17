@@ -165,6 +165,14 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
     public void add(User user) {
-        baseMapper.insert(user);
+        user.setGmtCreate(LocalDateTime.now());
+        try {
+            user.setPwd(DigestUtils.md5DigestAsHex(user.getPwd().getBytes("UTF-8")));
+            baseMapper.insert(user);
+        }catch (Exception e){
+            log.error("插入异常" +e.getMessage());
+            return;
+        }
+
     }
 }

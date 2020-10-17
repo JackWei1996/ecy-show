@@ -11,6 +11,7 @@ import com.ecy.show.service.sys.UserService;
 import com.ecy.show.util.JwtUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +27,10 @@ import java.io.UnsupportedEncodingException;
  * @author 南京白墨科技有限公司
  * @since 2019-10-29
  */
-@RestController
+@RestController("OpenUserController")
 @RequestMapping("/open")
 @Validated
-@Api(tags = "用户")
+@Api(tags = "用户公告接口")
 public class UserController {
     private UserService userService;
     private TicketService ticketService;
@@ -39,20 +40,13 @@ public class UserController {
         this.ticketService = ticketService;
     }
 
-    @GetMapping
-    @ApiOperation("获取个人信息")
-    public CurrentUser getInfo() throws BusinessException {
-        return userService.getLoginInfo();
-    }
-
     @ApiOperation("注册")
     @PostMapping("register")
-    public User register(User user) {
-        try {
-            userService.add(user);
-        }catch (Exception e){
-            e.printStackTrace();
+    public User register(User user) throws BusinessException {
+        if (StringUtils.isAnyBlank(user.getPwd(), user.getName(), user.getPhone())){
+            throw new BusinessException("请输入正确信息!");
         }
+        userService.add(user);
         return user;
     }
 
