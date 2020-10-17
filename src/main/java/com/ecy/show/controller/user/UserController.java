@@ -1,25 +1,17 @@
 package com.ecy.show.controller.user;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.ecy.show.dto.sys.CurrentUser;
-import com.ecy.show.dto.sys.LoginDto;
 import com.ecy.show.entity.Works;
 import com.ecy.show.entity.sys.User;
 import com.ecy.show.exception.BusinessException;
 import com.ecy.show.service.WorksService;
 import com.ecy.show.service.sys.TicketService;
 import com.ecy.show.service.sys.UserService;
-import com.ecy.show.util.JwtUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.DigestUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 
 /**
  * <p>
@@ -44,7 +36,7 @@ public class UserController {
         this.worksService = worksService;
     }
 
-    @GetMapping
+    @GetMapping("getInfo")
     @ApiOperation("获取个人信息")
     public CurrentUser getInfo() throws BusinessException {
         return userService.getLoginInfo();
