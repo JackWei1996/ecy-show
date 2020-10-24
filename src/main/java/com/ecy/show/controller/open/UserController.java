@@ -51,7 +51,10 @@ public class UserController {
         if (StringUtils.isAnyBlank(user.getPwd(), user.getName(), user.getPhone())){
             throw new BusinessException("请输入正确信息!");
         }
-        userService.add(user);
+        int flag = userService.add(user);
+        if (flag < 0){
+            throw new BusinessException("该手机号已经注册!");
+        }
         return user;
     }
 

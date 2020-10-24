@@ -1,5 +1,6 @@
 package com.ecy.show.service.sys;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ecy.show.exception.BusinessException;
@@ -164,14 +165,21 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         updateById(user);
     }
 
-    public void add(User user) {
+    public int add(User user) {
         user.setGmtCreate(LocalDateTime.now());
         try {
+            // 手机号重复注册
+            Integer phone = baseMapper.selectCount(new QueryWrapper<User>()
+                    .eq("phone", user.getPhone()));
+            if (phone > 0) {
+                return -1;
+            }
             user.setPwd(DigestUtils.md5DigestAsHex(user.getPwd().getBytes("UTF-8")));
             baseMapper.insert(user);
+            return 1;
         }catch (Exception e){
             log.error("插入异常" +e.getMessage());
-            return;
+            return 0;
         }
 
     }
