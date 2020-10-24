@@ -47,7 +47,7 @@ public class UserController {
 
     @ApiOperation("注册")
     @PostMapping("register")
-    public User register(User user) throws BusinessException {
+    public User register(@RequestBody User user) throws BusinessException {
         if (StringUtils.isAnyBlank(user.getPwd(), user.getName(), user.getPhone())){
             throw new BusinessException("请输入正确信息!");
         }
@@ -88,7 +88,7 @@ public class UserController {
     }
 
     @ApiOperation("搜索")
-    @PostMapping("search")
+    @GetMapping("search")
     public IPage logout(Page page, Works works) {
         return worksService.search(page, works);
     }
